@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# 本地环境
+.env
+.env.local
+.env.*.local
+.env.example
+.venv
+venv
+__pycache__
+
+# 前端（镜像内重新构建）
+frontend/node_modules
+frontend/dist
+
+# 运行时数据（用卷挂载）
+data/
+*.db
+*.sqlite
+
+# 文档
+README.md
+*.md
+LICENSE
+
+# IDE / 系统
+.idea
+.vscode
+.cursor
+.DS_Store
+Thumbs.db
+
+# Docker 自身
+Dockerfile
+docker-compose.yml
+.dockerignore
