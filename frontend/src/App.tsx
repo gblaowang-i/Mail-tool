@@ -120,7 +120,7 @@ export const App = () => {
             className={view === "emails" ? "nav-btn active" : "nav-btn"}
             onClick={() => {
               setView("emails");
-              setSelectedAccountId(null);
+              // 不在这里清空 selectedAccountId，保留在账号列表选中的账号，切到邮件列表即看该账号邮件
             }}
           >
             邮件列表
