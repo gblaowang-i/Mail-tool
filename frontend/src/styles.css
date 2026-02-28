@@ -885,8 +885,11 @@ html[data-theme="light"] .provider-custom {
 }
 
 .table-actions {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 0.35rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .stats-kpi-row {
