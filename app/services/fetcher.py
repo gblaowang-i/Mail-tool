@@ -178,8 +178,8 @@ async def fetch_recent_emails_for_account(
     )
     telegram_rules = list(telegram_rules_result.scalars().all())
 
-    # 初次同步仅入库不推送；非初次时 new_records 仅含本轮新插入的邮件（即“添加之后才收到的”），再叠加 2h 时间窗与间隔发送，避免轰炸。
-    PUSH_RECENCY_HOURS = 2
+    # 初次同步仅入库不推送；非初次时 new_records 仅含本轮新插入的邮件，再叠加“最近 N 小时内”才推送，避免轰炸。
+    PUSH_RECENCY_HOURS = 12
     recency_threshold = datetime.utcnow() - timedelta(hours=PUSH_RECENCY_HOURS)
     TELEGRAM_PUSH_DELAY_SEC = 1.5
     MAX_PUSH_PER_ACCOUNT_PER_RUN = 30
@@ -208,9 +208,10 @@ async def fetch_recent_emails_for_account(
                     await asyncio.sleep(TELEGRAM_PUSH_DELAY_SEC)
             await send_webhook_for_email(record, account.email)
         if new_records:
+            hint = f" (超过{PUSH_RECENCY_HOURS}h未推送)" if recency_skipped else ""
             print(
                 f"[telegram] account_id={account.id} new_emails={len(new_records)} "
-                f"recency_skipped={recency_skipped} pushed={pushed_count}"
+                f"recency_skipped={recency_skipped} pushed={pushed_count}{hint}"
             )
     elif new_records:
         print(f"[telegram] account_id={account.id} initial_sync new_emails={len(new_records)} (no push)")
