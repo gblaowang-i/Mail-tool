@@ -71,17 +71,6 @@ export const EmailList = ({ accountId }: Props) => {
     fetchEmails();
   }, [accountId, page, fetchEmails]);
 
-  // 自动轮询刷新列表，静默刷新不显示 loading，避免页面跳到顶部。
-  useEffect(() => {
-    const intervalMs = 20_000;
-    const id = window.setInterval(() => {
-      if (!loading) {
-        fetchEmails(true);
-      }
-    }, intervalMs);
-    return () => window.clearInterval(id);
-  }, [fetchEmails, loading]);
-
   const openDetail = async (id: number) => {
     try {
       setLoadingDetail(true);
