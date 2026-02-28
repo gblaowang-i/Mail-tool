@@ -7,7 +7,8 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---- 阶段二：Python 运行时 ----
-FROM python:3.12-slim AS runtime
+# 使用 Python 3.11（pydantic 1.x 与 3.12 存在兼容性问题）
+FROM python:3.11-slim AS runtime
 WORKDIR /app
 
 # 安装 Python 依赖（单独 COPY requirements 以利用层缓存）
