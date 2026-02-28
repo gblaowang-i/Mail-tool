@@ -88,9 +88,9 @@ async def send_telegram_message(text: str) -> None:
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             await client.post(url, json=payload)
-        except Exception:
-            # Swallow all errors to avoid impacting the main flow.
-            # Logging can be added later if needed.
+        except Exception as exc:
+            # 避免影响主流程，但将错误打印到日志，便于排查 Telegram 推送失败原因。
+            print(f"[telegram] send failed: {exc}")
             return
 
 

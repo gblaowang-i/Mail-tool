@@ -71,6 +71,17 @@ export const EmailList = ({ accountId }: Props) => {
     fetchEmails();
   }, [accountId, page, fetchEmails]);
 
+  // 静默自动刷新：定期后台拉取最新邮件列表，不影响当前界面状态。
+  useEffect(() => {
+    const intervalMs = 20_000;
+    const id = window.setInterval(() => {
+      if (!loading) {
+        fetchEmails(true);
+      }
+    }, intervalMs);
+    return () => window.clearInterval(id);
+  }, [fetchEmails, loading]);
+
   const openDetail = async (id: number) => {
     try {
       setLoadingDetail(true);
