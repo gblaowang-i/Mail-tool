@@ -74,7 +74,8 @@ async def send_telegram_message(text: str) -> None:
     chat_id: Optional[str] = settings.telegram_chat_id
 
     if not token or not chat_id:
-        # Telegram 未配置时直接跳过。
+        # Telegram 未配置时直接跳过；打日志便于排查“收不到推送”问题。
+        print("[telegram] skip: telegram_bot_token or telegram_chat_id not set (check Settings / system_settings)")
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"

@@ -30,7 +30,7 @@ async def fetch_recent_emails_for_account(
     if not account or not account.is_active:
         return 0
 
-    # Determine whether this is an initial sync for this account.
+    print(f"[telegram] fetch_start account_id={account_id}")
     existing_count = await db.execute(
         select(func.count(EmailRecord.id)).where(EmailRecord.account_id == account_id)
     )
@@ -184,12 +184,19 @@ async def fetch_recent_emails_for_account(
     TELEGRAM_PUSH_DELAY_SEC = 1.5
     MAX_PUSH_PER_ACCOUNT_PER_RUN = 30
 
+    # 每次拉取都打一行，便于确认是否走到推送逻辑（若无新邮件则 new_records=0，不会推送）
+    print(f"[telegram] account_id={account.id} is_initial_sync={is_initial_sync} new_records={len(new_records)}")
+
     if not is_initial_sync:
         pushed_count = 0
+        recency_skipped = 0
         for record, _ in new_records:
-            if pushed_count >= MAX_PUSH_PER_ACCOUNT_PER_RUN:
-                break
             if record.received_at and record.received_at < recency_threshold:
+                recency_skipped += 1
+                await send_webhook_for_email(record, account.email)
+                continue
+            if pushed_count >= MAX_PUSH_PER_ACCOUNT_PER_RUN:
+                await send_webhook_for_email(record, account.email)
                 continue
             skip_from_mail = skip_telegram_by_id.get(record.id, False)
             if should_push_telegram(
@@ -200,6 +207,13 @@ async def fetch_recent_emails_for_account(
                 if pushed_count < MAX_PUSH_PER_ACCOUNT_PER_RUN:
                     await asyncio.sleep(TELEGRAM_PUSH_DELAY_SEC)
             await send_webhook_for_email(record, account.email)
+        if new_records:
+            print(
+                f"[telegram] account_id={account.id} new_emails={len(new_records)} "
+                f"recency_skipped={recency_skipped} pushed={pushed_count}"
+            )
+    elif new_records:
+        print(f"[telegram] account_id={account.id} initial_sync new_emails={len(new_records)} (no push)")
 
     return inserted + updated
 
