@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import asyncio
 import json
@@ -180,7 +180,16 @@ async def fetch_recent_emails_for_account(
 
     # 初次同步仅入库不推送；非初次时 new_records 仅含本轮新插入的邮件，再叠加“最近 N 小时内”才推送，避免轰炸。
     PUSH_RECENCY_HOURS = 12
-    recency_threshold = datetime.utcnow() - timedelta(hours=PUSH_RECENCY_HOURS)
+    recency_threshold = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=PUSH_RECENCY_HOURS)
+
+    def _received_at_naive_utc(dt: datetime | None) -> datetime | None:
+        """归一化为 naive UTC，避免与 recency_threshold 比较时 offset-naive vs offset-aware 报错。"""
+        if dt is None:
+            return None
+        if dt.tzinfo is not None:
+            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+
     TELEGRAM_PUSH_DELAY_SEC = 1.5
     MAX_PUSH_PER_ACCOUNT_PER_RUN = 30
 
@@ -193,7 +202,8 @@ async def fetch_recent_emails_for_account(
         push_error: str | None = None
         try:
             for record, _ in new_records:
-                if record.received_at and record.received_at < recency_threshold:
+                r_at = _received_at_naive_utc(record.received_at)
+                if r_at is not None and r_at < recency_threshold:
                     recency_skipped += 1
                     await send_webhook_for_email(record, account.email)
                     continue
