@@ -80,10 +80,3 @@ mail-tool/
 ├── .env.example         # 环境变量示例（实际生产用 docker-compose 环境变量）
 └── README.md
 ```
-
----
-
-## 提示
-
-- **不要提交 `.env` 或包含真实密钥的文件** 到 Git，只保留 `.env.example` 作为模板。
-- 生产环境一律通过 Docker 部署，Windows 上的开发脚本已经移除。***
