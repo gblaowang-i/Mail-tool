@@ -3,11 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter
 
-from app.worker.poller import (
-    last_poll_error,
-    last_poll_finished_at,
-    last_poll_started_at,
-)
+from app.worker import poller
 
 router = APIRouter(tags=["health"])
 
@@ -21,9 +17,9 @@ async def health_check() -> dict:
     return {
         "status": "ok",
         "poller": {
-            "last_started_at": _to_iso(last_poll_started_at),
-            "last_finished_at": _to_iso(last_poll_finished_at),
-            "last_error": last_poll_error,
+            "last_started_at": _to_iso(poller.last_poll_started_at),
+            "last_finished_at": _to_iso(poller.last_poll_finished_at),
+            "last_error": poller.last_poll_error,
         },
     }
 
