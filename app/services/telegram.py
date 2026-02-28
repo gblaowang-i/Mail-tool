@@ -74,6 +74,7 @@ async def send_telegram_message(text: str) -> None:
     chat_id: Optional[str] = settings.telegram_chat_id
 
     if not token or not chat_id:
+        # Telegram 未配置时直接跳过。
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -87,7 +88,16 @@ async def send_telegram_message(text: str) -> None:
     timeout = httpx.Timeout(10.0, connect=5.0)
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
-            await client.post(url, json=payload)
+            resp = await client.post(url, json=payload)
+            # 记录 Telegram API 返回是否成功，方便排查 chat_id / token 等配置问题。
+            try:
+                data = resp.json()
+            except Exception:
+                data = None
+            ok_flag = bool(data and data.get("ok"))
+            if not ok_flag:
+                snippet = resp.text[:200].replace("\n", " ")
+                print(f"[telegram] api error status={resp.status_code} body={snippet}")
         except Exception as exc:
             # 避免影响主流程，但将错误打印到日志，便于排查 Telegram 推送失败原因。
             print(f"[telegram] send failed: {exc}")
