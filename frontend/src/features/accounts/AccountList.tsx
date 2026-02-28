@@ -52,10 +52,12 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
   const [newRule, setNewRule] = useState({ field: "sender" as const, mode: "allow" as const, value: "" });
   const [addingRule, setAddingRule] = useState(false);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
-      setError(null);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
       const [accRes, statusRes] = await Promise.all([
         apiClient.get<EmailAccount[]>("/accounts/"),
         apiClient.get<AccountPollStatus[]>("/accounts/status")
@@ -65,17 +67,24 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
       for (const s of statusRes.data) map[s.account_id] = s;
       setStatusMap(map);
     } catch (e) {
-      setError("加载账号失败");
+      if (!silent) {
+        setError("加载账号失败");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // 首次加载显示 loading，之后每 15s 静默刷新状态与错误信息。
     fetchAccounts();
-    const id = setInterval(fetchAccounts, 15000);
-    return () => clearInterval(id);
-  }, []);
+    const id = window.setInterval(() => {
+      fetchAccounts(true);
+    }, 15000);
+    return () => window.clearInterval(id);
+  }, [fetchAccounts]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
