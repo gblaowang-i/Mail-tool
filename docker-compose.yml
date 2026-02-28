@@ -12,9 +12,9 @@ services:
       - TZ=Asia/Shanghai
       # 加密密钥与登录配置（请在部署前改成自己的强随机值）
       - ENCRYPTION_KEY=
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=admin123
-      - JWT_SECRET=1234567890987654321
+      - ADMIN_USERNAME=
+      - ADMIN_PASSWORD=
+      - JWT_SECRET=
       # 可选：API Token
       - API_TOKEN=
       # 可选：Telegram Bot Token and Chat ID
