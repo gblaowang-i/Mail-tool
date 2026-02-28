@@ -36,7 +36,8 @@ async def fetch_recent_emails_for_account(
     existing_total = int(existing_count.scalar_one() or 0)
 
     # 初次同步：会拉取大量历史邮件用于填充列表，但不应触发“新邮件推送”，否则会疯狂推送历史邮件。
-    is_initial_sync = existing_total < 50
+    # 判断条件改为“数据库里目前一封都没有”，只在第一次抓取时视为初次同步。
+    is_initial_sync = existing_total == 0
 
     if is_initial_sync:
         # 初次或接近初次同步：拉取更长时间、更多数量的历史邮件。
