@@ -934,6 +934,7 @@ html[data-theme="light"] .provider-custom {
   cursor: pointer;
   background: rgba(38, 38, 38, 0.95);
   color: #e5e7eb;
+  white-space: nowrap;
 }
 
 .small-btn:hover {

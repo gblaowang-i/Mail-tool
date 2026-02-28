@@ -468,7 +468,7 @@ export const AccountList = ({ selectedAccountId, onSelectAccount, onViewEmailsFo
                 最近拉取{renderSortIndicator("last_success_at")}
               </th>
               <th>最近错误</th>
-              <th style={{ width: 220 }}>操作</th>
+              <th style={{ width: 320 }}>操作</th>
             </tr>
           </thead>
           <tbody>
