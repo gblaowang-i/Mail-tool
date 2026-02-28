@@ -16,9 +16,10 @@ type SortKey = "manual" | "email" | "provider" | "host" | "port" | "last_success
 interface Props {
   selectedAccountId: number | null;
   onSelectAccount: (id: number | null) => void;
+  onViewEmailsForAccount?: (id: number) => void;
 }
 
-export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
+export const AccountList = ({ selectedAccountId, onSelectAccount, onViewEmailsForAccount }: Props) => {
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -618,6 +619,15 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="table-actions">
+                          {onViewEmailsForAccount && (
+                            <button
+                              className="small-btn"
+                              onClick={() => onViewEmailsForAccount(acc.id)}
+                              title="查看该账号邮件"
+                            >
+                              查看邮件
+                            </button>
+                          )}
                           <button
                             className="small-btn"
                             onClick={() => toggleActive(acc)}

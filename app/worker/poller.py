@@ -40,16 +40,17 @@ async def poller_loop() -> None:
         last_poll_error = None
 
         try:
-            async with async_session_factory() as db:
-                res = await db.execute(
+            async with async_session_factory() as db_list:
+                res = await db_list.execute(
                     select(EmailAccount).where(EmailAccount.is_active.is_(True))
                 )
                 active_accounts = list(res.scalars().all())
 
-                for account in active_accounts:
-                    interval = account.poll_interval_seconds or global_interval
-                    interval = max(interval, 5)
+            for account in active_accounts:
+                interval = account.poll_interval_seconds or global_interval
+                interval = max(interval, 5)
 
+                async with async_session_factory() as db:
                     status_row = await db.get(AccountPollStatus, account.id)
                     if status_row and status_row.last_started_at:
                         elapsed = (now - status_row.last_started_at).total_seconds()

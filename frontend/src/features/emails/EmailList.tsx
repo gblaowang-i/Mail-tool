@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import {
+  EmailAccount,
   EmailListResponse,
   EmailRecord,
   EmailRecordDetail,
@@ -14,6 +15,8 @@ interface Props {
 type TimeRangeKey = "all" | "24h" | "7d" | "30d";
 
 export const EmailList = ({ accountId }: Props) => {
+  const [accounts, setAccounts] = useState<EmailAccount[]>([]);
+  const [accountFilter, setAccountFilter] = useState<number | null>(null);
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,14 @@ export const EmailList = ({ accountId }: Props) => {
   const [labelFilter, setLabelFilter] = useState("");
   const [applyingRules, setApplyingRules] = useState(false);
 
+  useEffect(() => {
+    apiClient.get<EmailAccount[]>("/accounts/").then((r) => setAccounts(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setAccountFilter(accountId);
+  }, [accountId]);
+
   const fetchEmails = useCallback(async (silent = false) => {
     try {
       if (!silent) {
@@ -36,7 +47,7 @@ export const EmailList = ({ accountId }: Props) => {
         setError(null);
       }
       const params: any = { page, page_size: pageSize };
-      if (accountId) params.account_id = accountId;
+      if (accountFilter) params.account_id = accountFilter;
       if (keyword.trim()) params.keyword = keyword.trim();
       if (readFilter === "unread") params.is_read = false;
       if (readFilter === "read") params.is_read = true;
@@ -61,15 +72,15 @@ export const EmailList = ({ accountId }: Props) => {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [accountId, page, pageSize, keyword, timeRange, readFilter, labelFilter]);
+  }, [accountFilter, page, pageSize, keyword, timeRange, readFilter, labelFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [accountId, keyword, timeRange, readFilter, labelFilter]);
+  }, [accountFilter, keyword, timeRange, readFilter, labelFilter]);
 
   useEffect(() => {
     fetchEmails();
-  }, [accountId, page, fetchEmails]);
+  }, [accountFilter, page, fetchEmails]);
 
   // 静默自动刷新：定期后台拉取最新邮件列表，不影响当前界面状态。
   useEffect(() => {
@@ -122,14 +133,14 @@ export const EmailList = ({ accountId }: Props) => {
   };
 
   const fetchRemote = async () => {
-    if (!accountId) {
-      setError("请先在账号管理中选择一个账号");
+    if (!accountFilter) {
+      setError("请先在上方选择要拉取的账号");
       return;
     }
     try {
       setFetchingRemote(true);
       setError(null);
-      await apiClient.post(`/emails/accounts/${accountId}/fetch_once`);
+      await apiClient.post(`/emails/accounts/${accountFilter}/fetch_once`);
       await fetchEmails();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
@@ -158,12 +169,34 @@ export const EmailList = ({ accountId }: Props) => {
         <div>
           <h2>邮件列表</h2>
           <p className="card-subtitle">
-            {accountId
-              ? `当前筛选账号 ID：${accountId}`
-              : "显示最近邮件，可以在上方账号页选择某个账号后返回这里查看。"}
+            {accountFilter ? "当前筛选单个账号" : "显示所有账号的邮件"}
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
+          <select
+            value={accountFilter ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              setAccountFilter(v === "" ? null : Number(v));
+              setPage(1);
+            }}
+            style={{
+              padding: "0.35rem 0.5rem",
+              borderRadius: "0.5rem",
+              border: "1px solid var(--input-border)",
+              background: "var(--input-bg)",
+              color: "var(--text)",
+              fontSize: "0.8rem",
+              minWidth: 140
+            }}
+          >
+            <option value="">全部账号</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.email}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             placeholder="搜索主题 / 发件人 / 摘要"

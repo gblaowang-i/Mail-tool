@@ -118,7 +118,10 @@ export const App = () => {
           </button>
           <button
             className={view === "emails" ? "nav-btn active" : "nav-btn"}
-            onClick={() => setView("emails")}
+            onClick={() => {
+              setView("emails");
+              setSelectedAccountId(null);
+            }}
           >
             邮件列表
           </button>
@@ -226,6 +229,10 @@ export const App = () => {
           <AccountList
             selectedAccountId={selectedAccountId}
             onSelectAccount={setSelectedAccountId}
+            onViewEmailsForAccount={(id) => {
+              setSelectedAccountId(id);
+              setView("emails");
+            }}
           />
         )}
         {view === "emails" && <EmailList accountId={selectedAccountId} />}

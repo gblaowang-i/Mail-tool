@@ -178,26 +178,18 @@ async def fetch_recent_emails_for_account(
     telegram_rules = list(telegram_rules_result.scalars().all())
 
     # 初次同步仅入库，不推送；后续增量才推送真正的新邮件。
+    # 额外限制：只推送最近 2 小时内收到的邮件，避免因边界情况推送历史邮件轰炸。
+    PUSH_RECENCY_HOURS = 2
+    recency_threshold = datetime.utcnow() - timedelta(hours=PUSH_RECENCY_HOURS)
+
     if not is_initial_sync:
-        if new_records:
-            print(
-                f"[telegram] account={account.email} "
-                f"existing_total={existing_total} "
-                f"new_records={len(new_records)} "
-                f"telegram_push_enabled={getattr(account, 'telegram_push_enabled', True)} "
-                f"telegram_rules={len(telegram_rules)}"
-            )
         for record, _ in new_records:
+            if record.received_at and record.received_at < recency_threshold:
+                continue
             skip_from_mail = skip_telegram_by_id.get(record.id, False)
-            should_push = should_push_telegram(
+            if should_push_telegram(
                 record, account, telegram_rules, skip_from_mail
-            )
-            print(
-                f"[telegram] record_id={record.id} "
-                f"skip_from_mail={skip_from_mail} should_push={should_push}"
-            )
-            if should_push:
-                print(f"[telegram] sending notification for record_id={record.id}")
+            ):
                 await send_email_notification(record, account)
             await send_webhook_for_email(record, account.email)
 
