@@ -44,7 +44,7 @@
    默认：
 
    - 访问地址：`http://服务器IP:8000`
-   - 数据库存储：当前目录下 `data/mail_agg.db`
+   - 数据库存储：Docker 数据卷 `mail-tool-data`（由 compose 自动创建并持久化）
 
 4. **日常运维**
 

@@ -23,9 +23,12 @@ services:
       # 可选：Webhook
       - WEBHOOK_URL=
     volumes:
-      - ./data:/app/data
+      - mail-tool-data:/app/data
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  mail-tool-data:
