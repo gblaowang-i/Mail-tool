@@ -21,7 +21,18 @@ async def poller_loop() -> None:
     global last_poll_started_at, last_poll_finished_at, last_poll_error
 
     settings = get_settings()
-    global_interval = int(settings.poll_interval_seconds)
+    # 解析全局轮询间隔，避免异常导致整个轮询任务直接退出
+    raw_interval = getattr(settings, "poll_interval_seconds", None)
+    try:
+        if raw_interval in (None, "", 0):
+            global_interval = 300
+        else:
+            global_interval = int(raw_interval)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[poller] invalid poll_interval_seconds={raw_interval!r}, fallback=300: {exc}")
+        global_interval = 300
+
+    print(f"[poller] loop started, global_interval={global_interval}s")
 
     while True:
         now = datetime.utcnow()
@@ -55,12 +66,16 @@ async def poller_loop() -> None:
                     try:
                         await fetch_recent_emails_for_account(db, account_id=account.id)
                         status_row.last_success_at = datetime.utcnow()
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001
                         last_poll_error = str(exc)
                         status_row.last_error = str(exc)
                     finally:
                         status_row.last_finished_at = datetime.utcnow()
                         await db.commit()
+        except Exception as exc:  # noqa: BLE001
+            # 捕获所有意外错误，避免轮询任务直接退出
+            last_poll_error = str(exc)
+            print(f"[poller] unexpected error: {exc}")
         finally:
             last_poll_finished_at = datetime.utcnow()
             await asyncio.sleep(TICK_SECONDS)
