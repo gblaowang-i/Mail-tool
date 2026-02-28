@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
+import asyncio
+import json
+
 from anyio import to_thread
 from bs4 import BeautifulSoup
 from imap_tools import AND, MailBox
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-import json
 
 from app.core.encryption import decrypt_secret
 from app.models.email import EmailAccount, EmailRecord
@@ -100,7 +101,7 @@ async def fetch_recent_emails_for_account(
 
     inserted = 0
     updated = 0
-    new_records: list[EmailRecord] = []
+    new_records: list[tuple[EmailRecord, str]] = []
 
     for message_id, subject, sender, received_at, body_text, body_html in fetched:
         existing_q = await db.execute(
@@ -177,13 +178,17 @@ async def fetch_recent_emails_for_account(
     )
     telegram_rules = list(telegram_rules_result.scalars().all())
 
-    # 初次同步仅入库，不推送；后续增量才推送真正的新邮件。
-    # 额外限制：只推送最近 2 小时内收到的邮件，避免因边界情况推送历史邮件轰炸。
+    # 初次同步仅入库不推送；非初次时 new_records 仅含本轮新插入的邮件（即“添加之后才收到的”），再叠加 2h 时间窗与间隔发送，避免轰炸。
     PUSH_RECENCY_HOURS = 2
     recency_threshold = datetime.utcnow() - timedelta(hours=PUSH_RECENCY_HOURS)
+    TELEGRAM_PUSH_DELAY_SEC = 1.5
+    MAX_PUSH_PER_ACCOUNT_PER_RUN = 30
 
     if not is_initial_sync:
+        pushed_count = 0
         for record, _ in new_records:
+            if pushed_count >= MAX_PUSH_PER_ACCOUNT_PER_RUN:
+                break
             if record.received_at and record.received_at < recency_threshold:
                 continue
             skip_from_mail = skip_telegram_by_id.get(record.id, False)
@@ -191,6 +196,9 @@ async def fetch_recent_emails_for_account(
                 record, account, telegram_rules, skip_from_mail
             ):
                 await send_email_notification(record, account)
+                pushed_count += 1
+                if pushed_count < MAX_PUSH_PER_ACCOUNT_PER_RUN:
+                    await asyncio.sleep(TELEGRAM_PUSH_DELAY_SEC)
             await send_webhook_for_email(record, account.email)
 
     return inserted + updated
