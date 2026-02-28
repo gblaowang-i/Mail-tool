@@ -190,28 +190,34 @@ async def fetch_recent_emails_for_account(
     if not is_initial_sync:
         pushed_count = 0
         recency_skipped = 0
-        for record, _ in new_records:
-            if record.received_at and record.received_at < recency_threshold:
-                recency_skipped += 1
+        push_error: str | None = None
+        try:
+            for record, _ in new_records:
+                if record.received_at and record.received_at < recency_threshold:
+                    recency_skipped += 1
+                    await send_webhook_for_email(record, account.email)
+                    continue
+                if pushed_count >= MAX_PUSH_PER_ACCOUNT_PER_RUN:
+                    await send_webhook_for_email(record, account.email)
+                    continue
+                skip_from_mail = skip_telegram_by_id.get(record.id, False)
+                if should_push_telegram(
+                    record, account, telegram_rules, skip_from_mail
+                ):
+                    await send_email_notification(record, account)
+                    pushed_count += 1
+                    if pushed_count < MAX_PUSH_PER_ACCOUNT_PER_RUN:
+                        await asyncio.sleep(TELEGRAM_PUSH_DELAY_SEC)
                 await send_webhook_for_email(record, account.email)
-                continue
-            if pushed_count >= MAX_PUSH_PER_ACCOUNT_PER_RUN:
-                await send_webhook_for_email(record, account.email)
-                continue
-            skip_from_mail = skip_telegram_by_id.get(record.id, False)
-            if should_push_telegram(
-                record, account, telegram_rules, skip_from_mail
-            ):
-                await send_email_notification(record, account)
-                pushed_count += 1
-                if pushed_count < MAX_PUSH_PER_ACCOUNT_PER_RUN:
-                    await asyncio.sleep(TELEGRAM_PUSH_DELAY_SEC)
-            await send_webhook_for_email(record, account.email)
+        except Exception as exc:  # noqa: BLE001
+            push_error = str(exc)
+            print(f"[telegram] account_id={account.id} push_error: {exc}")
         if new_records:
             hint = f" (超过{PUSH_RECENCY_HOURS}h未推送)" if recency_skipped else ""
+            err_hint = f" error={push_error}" if push_error else ""
             print(
                 f"[telegram] account_id={account.id} new_emails={len(new_records)} "
-                f"recency_skipped={recency_skipped} pushed={pushed_count}{hint}"
+                f"recency_skipped={recency_skipped} pushed={pushed_count}{hint}{err_hint}"
             )
     elif new_records:
         print(f"[telegram] account_id={account.id} initial_sync new_emails={len(new_records)} (no push)")
