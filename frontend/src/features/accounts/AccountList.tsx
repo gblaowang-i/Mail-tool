@@ -616,7 +616,7 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
                           "-"
                         )}
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="col-actions" onClick={(e) => e.stopPropagation()}>
                         <div className="table-actions">
                           <button
                             className="small-btn"

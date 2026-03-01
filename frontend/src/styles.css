@@ -83,6 +83,24 @@ html[data-theme="light"] .badge-info {
   background: rgba(59, 130, 246, 0.15);
   color: #1e40af;
 }
+html[data-theme="light"] .small-btn {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(15, 23, 42, 0.15);
+  color: #334155;
+}
+html[data-theme="light"] .small-btn:hover {
+  background: rgba(226, 232, 240, 0.95);
+  border-color: rgba(15, 23, 42, 0.25);
+}
+html[data-theme="light"] .small-btn.danger {
+  background: rgba(254, 226, 226, 0.9);
+  border-color: rgba(185, 28, 28, 0.35);
+  color: #b91c1c;
+}
+html[data-theme="light"] .small-btn.danger:hover {
+  background: rgba(254, 202, 202, 0.95);
+  border-color: rgba(185, 28, 28, 0.5);
+}
 html[data-theme="light"] .email-labels-empty {
   background: rgba(15, 23, 42, 0.06);
   color: #64748b;
@@ -410,6 +428,10 @@ body {
 .data-table th {
   font-weight: 500;
   color: var(--muted);
+}
+
+.data-table td.col-actions {
+  vertical-align: middle;
 }
 
 .data-table .col-time {
@@ -887,9 +909,10 @@ html[data-theme="light"] .provider-custom {
 .table-actions {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.35rem;
+  gap: 0.5rem;
   justify-content: flex-end;
   align-items: center;
+  padding: 0.15rem 0;
 }
 
 .stats-kpi-row {
@@ -927,14 +950,15 @@ html[data-theme="light"] .provider-custom {
 }
 
 .small-btn {
-  border-radius: 999px;
+  border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 0.25rem 0.6rem;
-  font-size: 0.75rem;
+  padding: 0.32rem 0.7rem;
+  font-size: 0.78rem;
   cursor: pointer;
   background: rgba(38, 38, 38, 0.95);
   color: #e5e7eb;
   white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .small-btn:hover {
@@ -948,13 +972,14 @@ html[data-theme="light"] .provider-custom {
 }
 
 .small-btn.danger {
-  border-color: rgba(248, 113, 113, 0.5);
+  border-color: rgba(248, 113, 113, 0.4);
   color: #fecaca;
+  background: rgba(127, 29, 29, 0.25);
 }
 
 .small-btn.danger:hover {
-  background: rgba(185, 28, 28, 0.5);
-  border-color: rgba(248, 113, 113, 0.9);
+  background: rgba(185, 28, 28, 0.4);
+  border-color: rgba(248, 113, 113, 0.7);
 }
 
 .link-btn {

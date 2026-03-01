@@ -196,7 +196,7 @@ export const RuleList = () => {
                 </td>
                 <td>{r.push_telegram ? "是" : "否"}</td>
                 <td>{r.mark_read ? "是" : "否"}</td>
-                <td>
+                <td className="col-actions">
                   <div className="table-actions">
                     <button
                       type="button"
