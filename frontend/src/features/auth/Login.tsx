@@ -8,11 +8,13 @@ const RESET_PASSWORD_URL = "/api/auth/reset-password";
 
 export interface LoginProps {
   onSuccess: () => void;
+  theme?: "dark" | "light";
+  onToggleTheme?: () => void;
 }
 
 type AuthView = "login" | "reset";
 
-export const Login = ({ onSuccess }: LoginProps) => {
+export const Login = ({ onSuccess, theme = "dark", onToggleTheme }: LoginProps) => {
   const [view, setView] = useState<AuthView>("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -92,6 +94,36 @@ export const Login = ({ onSuccess }: LoginProps) => {
 
   return (
     <div className="auth-page">
+      {onToggleTheme && (
+        <button
+          type="button"
+          className="auth-theme-toggle"
+          onClick={onToggleTheme}
+          title={theme === "dark" ? "切换到日间" : "切换到夜间"}
+          aria-label={theme === "dark" ? "切换到日间" : "切换到夜间"}
+        >
+          {theme === "dark" ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="6.2" fill="#fef08a" stroke="#f59e0b" strokeWidth="1.6" />
+              <g fill="#f59e0b">
+                <rect x="11.4" y="1.8" width="1.2" height="3.0" rx="0.6" />
+                <rect x="11.4" y="19.2" width="1.2" height="3.0" rx="0.6" />
+                <rect x="1.8" y="11.4" width="3.0" height="1.2" rx="0.6" />
+                <rect x="19.2" y="11.4" width="3.0" height="1.2" rx="0.6" />
+                <rect x="4.1" y="4.1" width="1.2" height="2.8" rx="0.6" transform="rotate(-45 4.7 5.5)" />
+                <rect x="18.7" y="17.1" width="1.2" height="2.8" rx="0.6" transform="rotate(-45 19.3 18.5)" />
+                <rect x="17.1" y="4.1" width="2.8" height="1.2" rx="0.6" transform="rotate(-45 18.5 4.7)" />
+                <rect x="4.1" y="18.7" width="2.8" height="1.2" rx="0.6" transform="rotate(-45 5.5 19.3)" />
+              </g>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.6 15.2c-1.1.5-2.3.7-3.6.7-4.4 0-8-3.6-8-8 0-1.4.3-2.7.9-3.8-3.6 1-6.2 4.3-6.2 8.2 0 4.7 3.8 8.5 8.5 8.5 3.7 0 6.9-2.4 8.4-5.6Z" fill="#f8fafc" stroke="#2563eb" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M18.8 14.8c-.8.3-1.6.4-2.5.4-3.6 0-6.5-2.9-6.5-6.5 0-1 .2-2 .7-2.8" fill="none" stroke="rgba(37, 99, 235, 0.35)" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+      )}
       <div className="auth-page-inner">
         <div className="auth-card">
           <div className="auth-logo" aria-hidden>

@@ -85,7 +85,7 @@ export const App = () => {
   }, []);
 
   if (needLogin === true) {
-    return <Login onSuccess={() => setNeedLogin(false)} />;
+    return <Login onSuccess={() => setNeedLogin(false)} theme={theme} onToggleTheme={toggleTheme} />;
   }
   if (needLogin === null) {
     return (
@@ -138,13 +138,16 @@ export const App = () => {
             控制台
           </button>
           {getApiToken() && (
-            <button
-              className="nav-btn"
-              type="button"
-              onClick={() => logout()}
-            >
-              退出
-            </button>
+            <>
+              <span className="nav-sep" aria-hidden="true" />
+              <button
+                className="nav-btn"
+                type="button"
+                onClick={() => logout()}
+              >
+                退出
+              </button>
+            </>
           )}
           <button
             className="nav-btn nav-icon-btn"
