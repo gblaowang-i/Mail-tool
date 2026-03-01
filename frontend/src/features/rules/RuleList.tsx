@@ -175,7 +175,7 @@ export const RuleList = () => {
               <th>添加标签</th>
               <th>推送 TG</th>
               <th>标已读</th>
-              <th style={{ width: 160 }}>操作</th>
+              <th className="col-actions" style={{ width: 200 }}>操作</th>
             </tr>
           </thead>
           <tbody>

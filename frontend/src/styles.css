@@ -430,8 +430,15 @@ body {
   color: var(--muted);
 }
 
+.data-table th.col-actions,
 .data-table td.col-actions {
+  text-align: right;
   vertical-align: middle;
+}
+
+.data-table td.col-actions {
+  width: 200px;
+  min-width: 200px;
 }
 
 .data-table .col-time {

@@ -467,7 +467,7 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
                 最近拉取{renderSortIndicator("last_success_at")}
               </th>
               <th>最近错误</th>
-              <th style={{ width: 320 }}>操作</th>
+              <th className="col-actions" style={{ width: 200 }}>操作</th>
             </tr>
           </thead>
           <tbody>
