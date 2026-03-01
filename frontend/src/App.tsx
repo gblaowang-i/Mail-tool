@@ -135,7 +135,7 @@ export const App = () => {
             className={view === "settings" ? "nav-btn active" : "nav-btn"}
             onClick={() => setView("settings")}
           >
-            系统设置
+            控制台
           </button>
           {getApiToken() && (
             <button
