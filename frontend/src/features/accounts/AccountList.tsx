@@ -761,6 +761,22 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
                   留空表示继承全局 POLL_INTERVAL_SECONDS（.env），最小 5 秒。
                 </p>
               </label>
+              <label className="field">
+                <span>邮箱授权码 / 应用密码</span>
+                <input
+                  type="password"
+                  value={form.app_password}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, app_password: e.target.value }))
+                  }
+                  placeholder={
+                    modalMode === "create"
+                      ? "不会明文存库，仅加密保存"
+                      : "留空表示不修改密码"
+                  }
+                  required={modalMode === "create"}
+                />
+              </label>
               </section>
 
               <section className="form-section">
@@ -899,26 +915,6 @@ export const AccountList = ({ selectedAccountId, onSelectAccount }: Props) => {
                   </div>
                 </div>
               )}
-              </section>
-
-              <section className="form-section">
-                <h4 className="form-section-title">安全</h4>
-              <label className="field">
-                <span>邮箱授权码 / 应用密码</span>
-                <input
-                  type="password"
-                  value={form.app_password}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, app_password: e.target.value }))
-                  }
-                  placeholder={
-                    modalMode === "create"
-                      ? "不会明文存库，仅加密保存"
-                      : "留空表示不修改密码"
-                  }
-                  required={modalMode === "create"}
-                />
-              </label>
               </section>
               {formError && <p className="error-text">{formError}</p>}
               <footer className="modal-footer">
