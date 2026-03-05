@@ -35,14 +35,20 @@ def create_app() -> FastAPI:
 
         index_html = STATIC_DIR / "index.html"
         if index_html.is_file():
+            static_dir_resolved = STATIC_DIR.resolve()
 
             @app.get("/{full_path:path}")
             def serve_spa(full_path: str) -> FileResponse:
-                # 优先返回 static 目录下存在的文件（如 favicon.ico）
-                file = STATIC_DIR / full_path
-                if full_path and file.is_file() and ".." not in full_path:
+                # 禁止绝对路径与路径穿越，防止扫描器请求 //etc/shadow、//proc/self/xxx 等触发读系统文件导致 PermissionError / 轮询异常
+                if not full_path or full_path.startswith("/") or ".." in full_path:
+                    return FileResponse(str(index_html))
+                try:
+                    file = (STATIC_DIR / full_path).resolve()
+                    if not file.is_relative_to(static_dir_resolved) or not file.is_file():
+                        return FileResponse(str(index_html))
                     return FileResponse(str(file))
-                return FileResponse(str(index_html))
+                except (ValueError, OSError):
+                    return FileResponse(str(index_html))
 
     @app.on_event("startup")
     async def _ensure_db_tables() -> None:
