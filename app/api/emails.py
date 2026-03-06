@@ -87,7 +87,7 @@ async def list_emails(
             EmailRecord.labels,
         )
         .join(EmailAccount, EmailAccount.id == EmailRecord.account_id)
-        .order_by(EmailRecord.received_at.desc())
+        .order_by(func.coalesce(EmailRecord.created_at, EmailRecord.received_at).desc())
         .offset(offset)
         .limit(page_size)
     )

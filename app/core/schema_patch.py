@@ -26,6 +26,8 @@ async def ensure_sqlite_columns(engine: AsyncEngine) -> None:
             await conn.execute(text("ALTER TABLE emails ADD COLUMN is_read INTEGER DEFAULT 0"))
         if "labels" not in cols:
             await conn.execute(text("ALTER TABLE emails ADD COLUMN labels TEXT DEFAULT '[]'"))
+        if "created_at" not in cols:
+            await conn.execute(text("ALTER TABLE emails ADD COLUMN created_at DATETIME DEFAULT NULL"))
 
         # accounts table: provider / sort_order
         res_acc = await conn.execute(text("PRAGMA table_info(accounts)"))

@@ -137,6 +137,7 @@ async def fetch_recent_emails_for_account(
             body_text=(body_text or None),
             body_html=(body_html or None),
             received_at=received_at,
+            created_at=datetime.utcnow(),
         )
         db.add(record)
         new_records.append((record, body_text or ""))

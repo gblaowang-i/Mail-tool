@@ -7,6 +7,7 @@ import {
   EmailRecordDetail,
   apiClient
 } from "../../api/client";
+import { MAIL_PROVIDERS } from "../../config/mailProviders";
 
 interface Props {
   accountId: number | null;
@@ -17,6 +18,8 @@ type TimeRangeKey = "all" | "24h" | "7d" | "30d";
 export const EmailList = ({ accountId }: Props) => {
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [accountFilter, setAccountFilter] = useState<number | null>(null);
+  const [accountSearch, setAccountSearch] = useState("");
+  const [brandFilter, setBrandFilter] = useState<string>("");
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,30 +176,82 @@ export const EmailList = ({ accountId }: Props) => {
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
-          <select
-            value={accountFilter ?? ""}
-            onChange={(e) => {
-              const v = e.target.value;
-              setAccountFilter(v === "" ? null : Number(v));
-              setPage(1);
-            }}
-            style={{
-              padding: "0.35rem 0.5rem",
-              borderRadius: "0.5rem",
-              border: "1px solid var(--input-border)",
-              background: "var(--input-bg)",
-              color: "var(--text)",
-              fontSize: "0.8rem",
-              minWidth: 140
-            }}
-          >
-            <option value="">全部账号</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.email}
-              </option>
-            ))}
-          </select>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            <select
+              value={brandFilter}
+              onChange={(e) => {
+                setBrandFilter(e.target.value);
+                setAccountFilter(null);
+                setPage(1);
+              }}
+              style={{
+                padding: "0.35rem 0.5rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--input-border)",
+                background: "var(--input-bg)",
+                color: "var(--text)",
+                fontSize: "0.8rem",
+                minWidth: 100
+              }}
+            >
+              <option value="">全部品牌</option>
+              {MAIL_PROVIDERS.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="搜索账号"
+              value={accountSearch}
+              onChange={(e) => setAccountSearch(e.target.value)}
+              style={{
+                padding: "0.35rem 0.5rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--input-border)",
+                background: "var(--input-bg)",
+                color: "var(--text)",
+                fontSize: "0.8rem",
+                width: 100
+              }}
+            />
+            <select
+              value={accountFilter ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setAccountFilter(v === "" ? null : Number(v));
+                setPage(1);
+              }}
+              style={{
+                padding: "0.35rem 0.5rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--input-border)",
+                background: "var(--input-bg)",
+                color: "var(--text)",
+                fontSize: "0.8rem",
+                minWidth: 180
+              }}
+            >
+              <option value="">全部账号</option>
+              {(() => {
+                let list = accounts;
+                if (brandFilter) {
+                  list = list.filter((a) => (a.provider || "custom") === brandFilter);
+                }
+                if (accountSearch.trim()) {
+                  list = list.filter((a) =>
+                    a.email.toLowerCase().includes(accountSearch.trim().toLowerCase())
+                  );
+                }
+                return list.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.email}
+                  </option>
+                ));
+              })()}
+            </select>
+          </div>
           <input
             type="text"
             placeholder="搜索主题 / 发件人 / 摘要"

@@ -43,6 +43,7 @@ class EmailRecord(Base):
     body_text: Mapped[str] = mapped_column(Text, nullable=True)
     body_html: Mapped[str] = mapped_column(Text, nullable=True)
     received_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     labels: Mapped[str] = mapped_column(Text, nullable=True, default="[]")
 
